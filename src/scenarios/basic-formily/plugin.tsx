@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ILowCodePluginContext,
-  plugins,
-  skeleton,
-  project,
-  setters,
-} from '@alilc/lowcode-engine';
+import { ILowCodePluginContext, plugins, skeleton, project, setters } from '@alilc/lowcode-engine';
 import AliLowCodeEngineExt from '@alilc/lowcode-engine-ext';
 import { Button } from '@alifd/next';
 import UndoRedoPlugin from '@alilc/lowcode-plugin-undo-redo';
@@ -14,17 +8,16 @@ import ZhEnPlugin from '@alilc/lowcode-plugin-zh-en';
 import CodeGenPlugin from '@alilc/lowcode-plugin-code-generator';
 import DataSourcePanePlugin from '@alilc/lowcode-plugin-datasource-pane';
 import SchemaPlugin from '@alilc/lowcode-plugin-schema';
-import CodeEditor from "@alilc/lowcode-plugin-code-editor";
-import ManualPlugin from "@alilc/lowcode-plugin-manual";
+import CodeEditor from '@alilc/lowcode-plugin-code-editor';
+import ManualPlugin from '@alilc/lowcode-plugin-manual';
 import Inject, { injectAssets } from '@alilc/lowcode-plugin-inject';
 import SimulatorResizer from '@alilc/lowcode-plugin-simulator-select';
 
 // 注册到引擎
 import TitleSetter from '@alilc/lowcode-setter-title';
-import BehaviorSetter from '../setters/behavior-setter';
-import CustomSetter from '../setters/custom-setter';
-import Logo from '../sample-plugins/logo';
-import { deleteHiddenTransducer } from '../sample-plugins/delete-hidden-transducer';
+import BehaviorSetter from '../../setters/behavior-setter';
+import CustomSetter from '../../setters/custom-setter';
+import Logo from '../../sample-plugins/logo';
 
 import {
   loadIncrementalAssets,
@@ -32,20 +25,17 @@ import {
   saveSchema,
   resetSchema,
   preview,
-} from './utils';
-import assets from './assets.json'
-import { registerRefProp } from 'src/sample-plugins/set-ref-prop';
+  getProjectSchemaFromLocalStorage,
+} from '../../universal/utils';
+import assets from './assets.json';
+import schema from './schema.json';
 
 export default async function registerPlugins() {
   await plugins.register(ManualPlugin);
 
   await plugins.register(Inject);
 
-  await plugins.register(registerRefProp);
-
-  await plugins.register(deleteHiddenTransducer);
-
-  // plugin API 见 https://lowcode-engine.cn/docV2/ibh9fh
+  // plugin API 见 https://yuque.antfin.com/ali-lowcode/docs/cdukce
   SchemaPlugin.pluginName = 'SchemaPlugin';
   await plugins.register(SchemaPlugin);
 
@@ -65,15 +55,15 @@ export default async function registerPlugins() {
         // 设置物料描述
         const { material, project } = ctx;
 
-        await material.setAssets(await injectAssets(assets));
-
-        const schema = await getPageSchema();
+        material.setAssets(await injectAssets(assets));
 
         // 加载 schema
-        project.openDocument(schema);
+        project.openDocument(
+          getProjectSchemaFromLocalStorage('basic-formily').componentsTree?.[0] || schema,
+        );
       },
     };
-  }
+  };
   editorInit.pluginName = 'editorInit';
   await plugins.register(editorInit);
 
@@ -113,10 +103,10 @@ export default async function registerPlugins() {
         componentsPane?.disable?.();
         project.onSimulatorRendererReady(() => {
           componentsPane?.enable?.();
-        })
+        });
       },
     };
-  }
+  };
   builtinPluginRegistry.pluginName = 'builtinPluginRegistry';
   await plugins.register(builtinPluginRegistry);
 
@@ -149,7 +139,7 @@ export default async function registerPlugins() {
         });
       },
     };
-  }
+  };
   setterRegistry.pluginName = 'setterRegistry';
   await plugins.register(setterRegistry);
 
@@ -173,11 +163,7 @@ export default async function registerPlugins() {
             align: 'right',
             width: 80,
           },
-          content: (
-            <Button onClick={loadIncrementalAssets}>
-              异步加载资源
-            </Button>
-          ),
+          content: <Button onClick={loadIncrementalAssets}>异步加载资源</Button>,
         });
       },
     };
@@ -199,11 +185,7 @@ export default async function registerPlugins() {
           props: {
             align: 'right',
           },
-          content: (
-            <Button onClick={() => saveSchema()}>
-              保存到本地
-            </Button>
-          ),
+          content: <Button onClick={() => saveSchema('basic-formily')}>保存到本地</Button>,
         });
         skeleton.add({
           name: 'resetSchema',
@@ -212,19 +194,15 @@ export default async function registerPlugins() {
           props: {
             align: 'right',
           },
-          content: (
-            <Button onClick={() => resetSchema()}>
-              重置页面
-            </Button>
-          ),
+          content: <Button onClick={() => resetSchema('basic-formily')}>重置页面</Button>,
         });
         hotkey.bind('command+s', (e) => {
           e.preventDefault();
-          saveSchema();
+          saveSchema('basic-formily');
         });
       },
     };
-  }
+  };
   saveSample.pluginName = 'saveSample';
   await plugins.register(saveSample);
 
@@ -251,7 +229,7 @@ export default async function registerPlugins() {
             align: 'right',
           },
           content: (
-            <Button type="primary" onClick={() => preview()}>
+            <Button type="primary" onClick={() => preview('basic-formily')}>
               预览
             </Button>
           ),
@@ -273,7 +251,7 @@ export default async function registerPlugins() {
         setters.registerSetter('CustomSetter', CustomSetter);
       },
     };
-  }
+  };
   customSetter.pluginName = 'customSetter';
   await plugins.register(customSetter);
-};
+}

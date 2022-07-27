@@ -21,11 +21,7 @@
           "headers": {},
           "uri": "mock/info.json"
         },
-        "id": "info",
-        "shouldFetch": {
-          "type": "JSFunction",
-          "value": "function() { \n  console.log('should fetch.....');\n  return true; \n}"
-        }
+        "id": "info"
       }
     ]
   },
